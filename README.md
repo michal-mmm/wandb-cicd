@@ -1,2 +1,2 @@
 # wandb-cicd
-basic CI/CD with GitHub Actions
+Basic CI/CD with GitHub Actions
