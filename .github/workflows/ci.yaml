@@ -6,6 +6,11 @@ jobs:
   my-job-name:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: hello-world
         run: |
           echo "hello world ${{ github.event_name }}"
+      - name: run python script
+        run: |
+          pip install -r requirements.txt
+          python ci.py
