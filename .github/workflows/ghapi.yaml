@@ -25,7 +25,7 @@ jobs:
         PAYLOAD: ${{ toJSON(github.event) }}
       
     - name: Make a comment
-      run: python github_clients/ghapi_client.py
+      run: python ../github_clients/ghapi_client.py
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NUMBER: ${{ github.event.issue.number }} 
