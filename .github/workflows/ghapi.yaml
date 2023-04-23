@@ -1,0 +1,27 @@
+name: ghapi-add-bug-label Workflow
+
+on: issue_comment
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  ghapi-bug-label:
+    if: (github.event.issue.pull_request != null) && contains(github.event.comment.body, '/bug')
+    runs-on: ubuntu-latest
+    steps:        
+    - name: install dependencies
+      run: pip install ghapi 
+
+    - name: see payload # this step is for debugging purposes only, so you can see the payload
+      run: echo "PAYLOAD:\n${PAYLOAD}\n"
+      env:
+        PAYLOAD: ${{ toJSON(github.event) }}
+      
+    - name: Make a comment
+      run: python github_clients/ghapi_client.py  
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NUMBER: ${{ github.event.issue.number }} 
+        REPO: ${{ github.repository }}
