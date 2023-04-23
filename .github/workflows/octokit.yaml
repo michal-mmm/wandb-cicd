@@ -16,6 +16,9 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v3
 
+        - name: Install octokit
+          run: npm install @octokit/rest
+
         - name: see payload # this step is for debugging purposes only, so you can see the payload
           run: echo "PAYLOAD:\n${PAYLOAD}\n"
           env:
