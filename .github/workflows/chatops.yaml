@@ -52,6 +52,9 @@ jobs:
             if:  steps.get-magic-value.outcome == 'success' && steps.get-magic-value.outputs.VAL_FOUND == 'true'
             run: echo "the value is ${{ steps.get-magic-value.outputs.MAGIC_VAL }}"
 
+        -   name: Checkout repository
+            uses: actions/checkout@v3
+
         -   name: Compare run to baseline
             if:  steps.get-magic-value.outcome == 'success' && steps.get-magic-value.outputs.VAL_FOUND == 'true'
             id: wandb-report
