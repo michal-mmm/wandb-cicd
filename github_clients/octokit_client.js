@@ -5,11 +5,12 @@ const octokit = new Octokit({
 auth: process.env.GITHUB_TOKEN
 });
 const [owner, repo] = process.env.REPO.split('/');
+const number = process.env.NUMBER;
 
 // Create an issue commment
 octokit.issues.createComment({
-    issue_number: 6,
+    issue_number: number,
     owner: owner,
     repo: repo,
-    body: "Hello! I'm making a comment from `octokit.js!`"
+    body: "Thanks for reporting! I'm making a comment from `octokit.js!`"
 });
