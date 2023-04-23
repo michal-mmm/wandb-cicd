@@ -1,0 +1,81 @@
+name: ChatOps Workflow
+
+on: issue_comment # this is used for PRs https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_review
+
+permissions:
+    contents: read
+    issues: write
+    pull-requests: write
+
+env:
+    # magic command in PRs
+    MAGIC_COMMENT: "/wandb"
+
+jobs:
+    print-report-url:
+        # only Pull Requests
+        if: (github.event.issue.pull_request != null)
+        runs-on: ubuntu-latest
+        steps:
+        # debugging
+        -   name: See payload
+            run: echo "PAYLOAD:\n${PAYLOAD}\n"
+            env:
+                PAYLOAD: ${{ toJSON(github.event) }}
+
+        # if body of PR contains /wandb, then
+        -   name: Filter for magic comment
+            id: filter
+            if: contains(github.event.comment.body, env.MAGIC_COMMENT)
+            run: echo "magic comment detected"
+
+        # if steps.filter.outcome=='success', then parse the run_id using regex
+        -   name: Parse value from the magic command
+            if: steps.filter.outcome == 'success'
+            id: get-magic-value
+            shell: python
+            run: |
+                import re, os
+                comment = os.getenv('PR_COMMENT', '')
+                match = re.search('${{ env.MAGIC_COMMENT }}[\s+](\S+)', comment)
+                with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                if match:
+                    print(f'VAL_FOUND=true', file=f)
+                    print(f'MAGIC_VAL={match.group(1)}', file=f)
+                else:
+                    print(f'VAL_FOUND=false', file=f)
+            env:
+                PR_COMMENT: ${{ github.event.comment.body }}
+
+        # print for debugging
+        -   name: Print value of magic command
+            if:  steps.get-magic-value.outcome == 'success' && steps.get-magic-value.outputs.VAL_FOUND == 'true'
+            run: echo "the value is ${{ steps.get-magic-value.outputs.MAGIC_VAL }}"
+
+        -   name: Compare run to baseline
+            if:  steps.get-magic-value.outcome == 'success' && steps.get-magic-value.outputs.VAL_FOUND == 'true'
+            id: wandb-report
+            run: python ./wandb_api/compare_runs.py
+            env:
+              WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}
+              WANDB_PROJECT: cicd-quickstart
+              BASELINE_TAG: baseline
+              RUN_ID: "${{ steps.get-magic-value.outputs.RUN_ID }}"
+              WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+
+
+        # Make a comment using github-script, if steps.wandb-report.outcome=='success'
+        -   name: Make a comment with the GitHub API
+            uses: actions/github-script@v6
+            if: steps.wandb-report.outcome == 'success'
+            with:
+                script: |
+                    var msg = `A comparison between the linked run and baseline is available [in this report](${process.env.REPORT_URL})`
+                    github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: msg
+                        })
+            env:
+                REPORT_URL: "${{ steps.wandb-report.outputs.REPORT_URL }}"
