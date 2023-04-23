@@ -1,0 +1,25 @@
+name: octokit Workflow
+
+on:
+    workflow_dispatch:
+
+jobs:
+    octokit-comment:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+
+        - name: see payload # this step is for debugging purposes only, so you can see the payload
+          run: echo "PAYLOAD:\n${PAYLOAD}\n"
+          env:
+            PAYLOAD: ${{ toJSON(github.event) }}
+        
+        - name: List files in repository
+          run: ls -R
+
+        - name: Make a comment
+          run: node ./github_clients/octokit_client.js
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            REPO: ${{ github.repository }}
