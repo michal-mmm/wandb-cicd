@@ -66,7 +66,7 @@ jobs:
               WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}
               WANDB_PROJECT: cicd-quickstart
               BASELINE_TAG: baseline
-              RUN_ID: "${{ steps.get-magic-value.outputs.RUN_ID }}"
+              RUN_ID: "${{ steps.get-magic-value.outputs.MAGIC_VAL }}"
               WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
 
 
