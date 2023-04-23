@@ -39,11 +39,11 @@ jobs:
                 comment = os.getenv('PR_COMMENT', '')
                 match = re.search('${{ env.MAGIC_COMMENT }}[\s+](\S+)', comment)
                 with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                if match:
-                    print(f'VAL_FOUND=true', file=f)
-                    print(f'MAGIC_VAL={match.group(1)}', file=f)
-                else:
-                    print(f'VAL_FOUND=false', file=f)
+                    if match:
+                        print(f'VAL_FOUND=true', file=f)
+                        print(f'MAGIC_VAL={match.group(1)}', file=f)
+                    else:
+                        print(f'VAL_FOUND=false', file=f)
             env:
                 PR_COMMENT: ${{ github.event.comment.body }}
 
